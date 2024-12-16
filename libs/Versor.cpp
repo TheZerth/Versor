@@ -14,14 +14,34 @@ namespace VRSR {
 
     //--------------------Addition--------------------
     // ADDITION of multivectors is simply the individual sums of the compononents.
-    Versor Versor::add(const Versor &v) const { return                  {a + v.a,   x + v.x,    y + v.y,    b + v.b}; }
-    Versor Versor::add(const std::vector<double> &d) const { return     {a + d[0],  x + d[1],   y + d[2],   b + d[3]}; }
-    Versor Versor::add(const std::vector<float> &f) const { return      {a + f[0],  x + f[1],   y + f[2],   b + f[3]}; }
-    Versor Versor::add(const std::vector<int> &i) const { return        {a + i[0],  x + i[1],   y + i[2],   b + i[3]}; }
-    Versor Versor::add(const double &d) const { return                  {a + d,     x,          y,          b}; }
-    Versor Versor::add(const float &f) const { return                   {a + f,     x,          y,          b}; }
-    Versor Versor::add(const int &i) const { return                     {a + i,     x,          y,          b}; }
-
+    template <typename T>
+    Versor Versor::add(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            return {a + t.a, x + t.x, y + t.y, b + t.b};
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a + t[0], x + t[1], y + t[2], b + t[3]};
+                case 3:
+                    return {a + t[0], x + t[1], y + t[2], b};
+                case 2:
+                    return {a + t[0], x + t[1], y, b};
+                case 1:
+                    return {a + t[0], x, y, b};
+                default:
+                    throw std::invalid_argument("Invalid size for addition");
+            }
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a + t, x, y, b};
+        }
+        else {
+            throw std::invalid_argument("Invalid type for addition");
+        }
+    }
+    /*
     //--------------------Subtraction--------------------
     // SUBTRACTION is defined as the sum of the inverse of the input versor.
     // A - B = A + (-B), here is the literal implementation of this.
@@ -105,5 +125,5 @@ namespace VRSR {
     // (e1 ^ e2) << (e1 ^ e2) = e1 << (e2 << (e1 ^ e2)) = -1
     // a << rhs = arhs
     // lhs << a = 0 if lhs grade > 0
-
+    */
 } // VRSR

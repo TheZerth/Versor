@@ -6,6 +6,8 @@
 
 namespace VRSR {
 
+    enum VectorComponents { X = 0, Y = 1, Z = 2, W = 3 };
+
     //These are the basis vectors used for the space. All multivectors are combinations of e1 and e2.
     static const std::vector<float> e1 = {1.0f,0.0f};
     static const std::vector<float> e2 = {0.0f,1.0f};
@@ -27,5 +29,21 @@ namespace VRSR {
     Versor Versor::sub(const double &d) const { return                  {a - d,     x,          y,          b}; }
     Versor Versor::sub(const float &f) const { return                   {a - f,     x,          y,          b}; }
     Versor Versor::sub(const int &i) const { return                     {a - i,     x,          y,          b}; }
+
+    //Versor Multiplication
+    Versor Versor::mul(const Versor &v) const {
+        float tempa = (a * v.a) + (x * v.x) + (y * v.y) + (-b * v.b);
+        float tempx = (x * v.a) + (b * v.y) + (a * v.x) + (-y * v.b);
+        float tempy = (a * v.y) + (x * v.b) + (y * v.a) + (-b * v.x);
+        float tempb = (b * v.a) + (a * v.b) + (x * v.y) + (-y * v.x);
+        return { tempa, tempx, tempy, tempb };
+    }
+    Versor Versor::mul(const std::vector<double> &d) const {
+        float tempa = (x * d[X]) + (y * d[Y]);
+        float tempx = (b * d[Y]) + (a * d[X]);
+        float tempy = (a * d[Y]) + (-b * d[X]);
+        float tempb = (x * d[Y]) + (-y * d[X]);
+        return { tempa, tempx, tempy, tempb };
+    }
 
 } // VRSR

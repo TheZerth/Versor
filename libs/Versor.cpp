@@ -15,10 +15,13 @@ namespace VRSR {
     //--------------------Addition--------------------
     // ADDITION of multivectors is simply the individual sums of the compononents.
     template <typename T>
-    Versor Versor::add(const T &t) const
+     Versor Versor::add(const T &t) const
     {
         if constexpr (std::is_same_v<T, Versor>) {
             return {a + t.a, x + t.x, y + t.y, b + t.b};
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a + t, x, y, b};
         }
         else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
             switch (t.size()) {
@@ -34,13 +37,18 @@ namespace VRSR {
                     throw std::invalid_argument("Invalid size for addition");
             }
         }
-        else if constexpr (std::is_arithmetic_v<T>) {
-            return {a + t, x, y, b};
-        }
         else {
             throw std::invalid_argument("Invalid type for addition");
         }
     }
+    // Explicit instantiation of the add method template for Versor
+    template Versor Versor::add<Versor>(const Versor &t) const;
+    template Versor Versor::add<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::add<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::add<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::add<double>(const double &t) const;
+    template Versor Versor::add<float>(const float &t) const;
+    template Versor Versor::add<int>(const int &t) const;
 
     //--------------------Subtraction--------------------
     // SUBTRACTION is defined as the sum of the inverse of the input versor.
@@ -50,6 +58,9 @@ namespace VRSR {
     {
         if constexpr (std::is_same_v<T, Versor>) {
             return {a - t.a, x - t.x, y - t.y, b - t.b};
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a - t, x, y, b};
         }
         else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
             switch (t.size()) {
@@ -65,13 +76,18 @@ namespace VRSR {
                     throw std::invalid_argument("Invalid size for subtraction");
             }
         }
-        else if constexpr (std::is_arithmetic_v<T>) {
-            return {a - t, x, y, b};
-        }
         else {
             throw std::invalid_argument("Invalid type for subtraction");
         }
     }
+    // Explicit instantiation of the sub method template for Versor
+    template Versor Versor::sub<Versor>(const Versor &t) const;
+    template Versor Versor::sub<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::sub<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::sub<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::sub<double>(const double &t) const;
+    template Versor Versor::sub<float>(const float &t) const;
+    template Versor Versor::sub<int>(const int &t) const;
 
     //--------------------Multiplication--------------------
     // Versor multiplication is not standard multiplication, it is what is known as a geometric product.
@@ -196,4 +212,8 @@ namespace VRSR {
     // a << rhs = arhs
     // lhs << a = 0 if lhs grade > 0
     */
+    //--------------------IO--------------------
+    std::string Versor::toString() const {
+        return std::to_string(a) + ", " + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(b);
+    }
 } // VRSR

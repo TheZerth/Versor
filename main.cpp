@@ -1,25 +1,26 @@
- #include <iostream>
+#include <iostream>
+#include "libs/Versor.h"
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 int main() {
-    // TIP Press <shortcut actionId="RenameElement"/> when your caret is at the
-    // <b>lang</b> variable name to see how CLion can help you rename it.
-    auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
 
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code.
-        // We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/>
-        // breakpoint for you, but you can always add more by pressing
-        // <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
+    VRSR::Versor v1 = {1.0, 1.0, 1.0, 1.0};
+    VRSR::Versor v2 = {2.0, 2.0, 2.0, 2.0};
+    VRSR::Versor v3 = {3.0, 3.0, 3.0, 3.0};
+    VRSR::Versor v4 = {4.0, 4.0, 4.0, 4.0};
+    VRSR::Versor v5 = {5.0, 5.0, 5.0, 5.0};
+    VRSR::Versor v6 = {6.0, 6.0, 6.0, 6.0};
+    VRSR::Versor v7 = {7.0, 7.0, 7.0, 7.0};
+    VRSR::Versor v8 = {8.0, 8.0, 8.0, 8.0};
+    VRSR::Versor v9 = {9.0, 9.0, 9.0, 9.0};
+    VRSR::Versor v10 = {10.0, 10.0, 10.0, 10.0};
+    VRSR::Versor versors[10] = {v1, v2, v3, v4, v5, v6, v7, v8, v9, v10};
+
+    for (auto &versor : versors) {
+        std::cout << (versor+versor) << std::endl;
+        std::cout << (versor+3.14159) << std::endl;
+        std::cout << (versor+3.14159f) << std::endl;
+        std::cout << (versor+3l) << std::endl;
     }
 
     return 0;
 }
-
-// TIP See CLion help at <a
-// href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>.
-//  Also, you can try interactive lessons for CLion by selecting
-//  'Help | Learn IDE Features' from the main menu.

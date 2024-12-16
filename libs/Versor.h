@@ -7,11 +7,14 @@
 #include <iomanip>
 #include <ios>
 #include <string>
+#include <thread>
 #include <vector>
+#include <type_traits>
 
 namespace VRSR {
 
 class Versor {
+//-------------------------------------------------
 //--------------------Variables--------------------
 public:
     std::vector<double> e1, e2;    //These are the basis vectors.
@@ -22,156 +25,53 @@ public:
 public:
     Versor(const double a, const double x, const double y, const double b) : a(a), x(x), y(y), b(b) {}
     ~Versor() = default;
+//-------------------------------------------------
 //--------------------OPERATORS--------------------
-public:
-    //--------------------Addition--------------------
-    // ADDITION of multivectors is simply the individual sums of the compononents.
-    Versor operator+(const Versor &v) const                 { return add(v); }
-    Versor operator+(const std::vector<double> &d) const    { return add(d); }
-    Versor operator+(const std::vector<float> &f) const     { return add(f); }
-    Versor operator+(const std::vector<int> &i) const       { return add(i); }
-    Versor operator+(const double &d) const                 { return add(d); }
-    Versor operator+(const float &f) const                  { return add(f); }
-    Versor operator+(const int &i) const                    { return add(i); }
+    //--------------------Addition----------------------
+    template <typename T>
+    Versor operator+(const T &t) const { return add(t); }
 
     //--------------------Subtraction--------------------
-    // SUBTRACTION is defined as the sum of the inverse of the input versor.
-    // A - B = A + (-B), here is the litteral implementation of this.
-    // I will not use this due to the fact that it is not as efficient as it could be.
-    /*Versor operator-(const Versor& v) const {
-        Versor temp{-v.a, -v.x, -v.y, -v.b};
-        return *this + temp;
-    }*/
-    Versor operator-(const Versor &v) const                 { return sub(v); }
-    Versor operator-(const std::vector<double> &d) const    { return sub(d); }
-    Versor operator-(const std::vector<float> &f) const     { return sub(f); }
-    Versor operator-(const std::vector<int> &i) const       { return sub(i); }
-    Versor operator-(const double &d) const                 { return sub(d); }
-    Versor operator-(const float &f) const                  { return sub(f); }
-    Versor operator-(const int &i) const                    { return sub(i); }
+    template <typename T>
+    Versor operator-(const T &t) const { return sub(t); }
 
-    // Versor multiplication is not standard multiplication, it is what is known as a geometric product.
-    // If we start by assuming one can multiply two multivectors together, we can define the geometric product through the following:
-    // ab = (ab + ab) / 2 = (ab + ba + ab - ba) / 2
-    // (ab+ba)/2 + (ab-ba)/2
-    // (ab+ba)/2 is the dot product, and (ab-ba)/2 is the wedge product.
-    // The dot product is the projection of one vector onto another multiplied by the product of their magnitudes.
-    // The wedge product is the oriented area or volume constructed by the components.
-    // The geometric product is the sum of the dot and wedge products.
-    // The geometric product is associative, distributive and the wedge component anti commutative.
-    // e1e2 = e1 ^ e2, the geometric product of two orthogonal basis vectors is the wedge product.
-    // e1e1 = 1
-    // e1(e1e2) = (e1e1)e2 = e2s
-    //--------------------Multiplication--------------------
-    // Versor Multiplication (Multivector Multiplication)
-    Versor operator*(const Versor &v) const                 { return mul(v); }
-    // Vector Multiplication
-    Versor operator*(const std::vector<double> &d) const    { return mul(d); }
-    Versor operator*(const std::vector<float> &f) const     { return mul(f); }
-    Versor operator*(const std::vector<int> &i) const       { return mul(i); }
-    // Scalar Multiplication
-    Versor operator*(const double &d) const                 { return mul(d); }
-    Versor operator*(const float &f) const                  { return mul(f); }
-    Versor operator*(const int &i) const                    { return mul(i); }
+    //--------------------Multiplication-----------------
+    template <typename T>
+    Versor operator*(const T &t) const { return mul(t); }
 
-    // Division with multivectors while simple at first is complicated.
-    // Typically only division of scalars is possible. Each component of the multivector must be divided by the scalar.
-    // This is not a true division, but a scaling of the multivector.
-    // Traditionally it is thought you can not divide a vector by another vector, however this is not true.
-    //--------------------Division--------------------
-    // Vector Division
-    Versor operator/(const std::vector<double> &d) const    { return div(d); }
-    Versor operator/(const std::vector<float> &f) const     { return div(f); }
-    Versor operator/(const std::vector<int> &i) const       { return div(i); }
-    // Versor Division
-    Versor operator/(const Versor &v) const                 { return div(v); }
-    // Scalar Division
-    Versor operator/(const double &d) const                 { return div(d); }
-    Versor operator/(const float &f) const                  { return div(f); }
-    Versor operator/(const int &i) const                    { return div(i); }
+    //--------------------Division----------------------
+    template <typename T>
+    Versor operator/(const T &t) const { return div(t); }
 
     //--------------------Exterior Product--------------------
-    // Wedge Product, used to create bivectors and trivectors out of vectors. Also known as the exterior product.
-    // This quantity represents the oriented area or volume constructed by the components.
-    // A is a versor containing a scalar and vector components; a+xe1+ye2
-    // A ^ B = (a_x * e1)(a_y * e2) ^ (b_x * e1)(b_y * e2), expanding with FOIL
-    // (a_x * e1) ^ (b_x * e1) + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + (a_y * e2) ^ (b_y * e2) =
-    // since e1_a = e1_b and a ^ a = 0, we can simplify this to:
-    // 0 + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + 0 =
-    // Using a ^ b = -b ^ a, we can simplify this to:
-    // (a_x * e1) ^ (b_y * e2) - (a_y * e1) ^ (b_x * e2) =
-    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
-    // (a_x * b_y - a_y * b_x) * e1 ^ e2
-    // e1 ^ e2 is the unit bivector that represents the oriented volume of our basis vectors.
-    // The rest is a scalar quantity.
-    // If the wedge product is zero, then the two vectors are parallel.
-    Versor operator^(const Versor &v) const                 { return ext(v); }
-    Versor operator^(const std::vector<double> &d) const    { return ext(d); }
-    Versor operator^(const std::vector<float> &f) const     { return ext(f); }
-    Versor operator^(const std::vector<int> &i) const       { return ext(i); }
-    Versor operator^(const double &d) const                 { return ext(d); }
-    Versor operator^(const float &f) const                  { return ext(f); }
-    Versor operator^(const int &i) const                    { return ext(i); }
+    template <typename T>
+    Versor operator^(const T &t) const { return ext(t); }
 
     //--------------------Interior Product--------------------
-    // Dot Product, used to create scalars out of vectors. Also known as the inner product or scalar product.
-    // Represents the projection of one vector onto another multiplied by the product of their magnitudes.
-    // A . B = (a_x * e1 + a_y * e2) . (b_x * e1 + b_y * e2), expanding with FOIL
-    // (a_x * e1) . (b_x * e1) + (a_x * e1) . (b_y * e2) + (a_y * e2) . (b_x * e1) + (a_y * e2) . (b_y * e2) =
-    // Since e1 and e2 are orthogonal, e1 . e2 = 0 we can simplify this to:
-    // (a_x * e1) . (b_x * e1) + 0 + 0 + (a_y * e2) . (b_y * e2) =
-    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
-    // (a_x * b_x)(e1 . e1) + (a_y * b_y)(e2 . e2) =
-    // Since e1 . e1 = 1 and e2 . e2 = 1, we can simplify this to:
-    // (a_x * b_x) + (a_y * b_y), just a scalar quantity.
-    // The inner product of itself is the square of the magnitude of the vector. A . A = |A|^2
-    Versor operator|(const Versor &v) const                 { return inr(v); }
-    Versor operator|(const std::vector<double> &d) const    { return inr(d); }
-    Versor operator|(const std::vector<float> &f) const     { return inr(f); }
-    Versor operator|(const std::vector<int> &i) const       { return inr(i); }
-    Versor operator|(const double &d) const                 { return inr(d); }
-    Versor operator|(const float &f) const                  { return inr(f); }
-    Versor operator|(const int &i) const                    { return inr(i); }
+    template <typename T>
+    Versor operator|(const T &t) const { return inr(t); }
 
-    // Contraction can be thought of the act of removing one object from another and leaving the result.
-    // It has many elagent uses in physics and mathematics.
-    // Given the two orthogonal basis vectores e1 and e2, contraction can be described by the following:
-    // e1 << e1 = 1, e1 << e2 = 0
-    // e1 << (e1 ^ e2) = e2, e1 << (e2 ^ e1) = -e2
-    // (e1 ^ e2) << (e1 ^ e2) = e1 << (e2 << (e1 ^ e2)) = -1
-    // a << rhs = arhs
-    // lhs << a = 0 if lhs grade > 0
     //--------------------Left Contraction--------------------
-    Versor operator<<(const Versor &v);
-    Versor operator<<(const std::vector<double> &d);
-    Versor operator<<(const std::vector<float> &f);
-    Versor operator<<(const std::vector<int> &i);
-    Versor operator<<(const double &d);
-    Versor operator<<(const float &f);
-    Versor operator<<(const int &i);
+    template <typename T>
+    Versor operator<<(const T &t) const { return lco(t); }
 
     //--------------------Right Contraction--------------------
-    Versor operator>>(const Versor &v);
-    Versor operator>>(const std::vector<double> &d);
-    Versor operator>>(const std::vector<float> &f);
-    Versor operator>>(const std::vector<int> &i);
-    Versor operator>>(const double &d);
-    Versor operator>>(const float &f);
-    Versor operator>>(const int &i);
+    template <typename T>
+    Versor operator>>(const T &t) const { return rco(t); }
 
     //--------------------Negate--------------------
-    Versor operator!();
+    Versor operator!() const { return negate(); }
 
     //--------------------Reverse--------------------
-    Versor operator~();
+    Versor operator~() const { return reverse(); }
 
     //--------------------Boolean Operations--------------------
-    bool operator==(const Versor & versor) const            { return a == versor.a && x == versor.x && y == versor.y && b == versor.b; }
-    bool operator!=(const Versor & versor) const            { return a != versor.a || x != versor.x || y != versor.y || b != versor.b; }
-    bool operator>(const Versor & versor) const             { return a > versor.a && x > versor.x && y > versor.y && b > versor.b; }
-    bool operator>=(const Versor & versor) const            { return a >= versor.a && x >= versor.x && y >= versor.y && b >= versor.b; }
-    bool operator<(const Versor & versor) const             { return a < versor.a && x < versor.x && y < versor.y && b < versor.b; }
-    bool operator<=(const Versor & versor) const            { return a <= versor.a && x <= versor.x && y <= versor.y && b <= versor.b; }
+    bool operator==(const Versor & versor) const    { return a == versor.a &&   x == versor.x &&    y == versor.y &&    b == versor.b; }
+    bool operator!=(const Versor & versor) const    { return a != versor.a ||   x != versor.x ||    y != versor.y ||    b != versor.b; }
+    bool operator>(const Versor & versor) const     { return a > versor.a &&    x > versor.x &&     y > versor.y &&     b > versor.b; }
+    bool operator>=(const Versor & versor) const    { return a >= versor.a &&   x >= versor.x &&    y >= versor.y &&    b >= versor.b; }
+    bool operator<(const Versor & versor) const     { return a < versor.a &&    x < versor.x &&     y < versor.y &&     b < versor.b; }
+    bool operator<=(const Versor & versor) const    { return a <= versor.a &&   x <= versor.x &&    y <= versor.y &&    b <= versor.b; }
 
     //--------------------IO-STREAM-FUNCTIONS--------------------
     // Console Outputd

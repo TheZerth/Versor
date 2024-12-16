@@ -72,7 +72,7 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for subtraction");
         }
     }
-    /*
+
     //--------------------Multiplication--------------------
     // Versor multiplication is not standard multiplication, it is what is known as a geometric product.
     // If we start by assuming one can multiply two multivectors together, we can define the geometric product through the following:
@@ -86,19 +86,36 @@ namespace VRSR {
     // e1e2 = e1 ^ e2, the geometric product of two orthogonal basis vectors is the wedge product.
     // e1e1 = 1
     // e1(e1e2) = (e1e1)e2 = e2s
-    Versor Versor::mul(const Versor &v) const {
-        float tempa = (a * v.a) + (x * v.x) + (y * v.y) + (-b * v.b);
-        float tempx = (x * v.a) + (b * v.y) + (a * v.x) + (-y * v.b);
-        float tempy = (a * v.y) + (x * v.b) + (y * v.a) + (-b * v.x);
-        float tempb = (b * v.a) + (a * v.b) + (x * v.y) + (-y * v.x);
-        return { tempa, tempx, tempy, tempb };
-    }
-    Versor Versor::mul(const std::vector<double> &d) const {
-        float tempa = (x * d[X]) + (y * d[Y]);
-        float tempx = (b * d[Y]) + (a * d[X]);
-        float tempy = (a * d[Y]) + (-b * d[X]);
-        float tempb = (x * d[Y]) + (-y * d[X]);
-        return { tempa, tempx, tempy, tempb };
+    template <typename T>
+    Versor Versor::mul(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            float tempa = (a * t.a) + (x * t.x) + (y * t.y) + (-b * t.b);
+            float tempx = (x * t.a) + (b * t.y) + (a * t.x) + (-y * t.b);
+            float tempy = (a * t.y) + (x * t.b) + (y * t.a) + (-b * t.x);
+            float tempb = (b * t.a) + (a * t.b) + (x * t.y) + (-y * t.x);
+            return { tempa, tempx, tempy, tempb };
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a * t[0], x * t[1], y * t[2], b * t[3]};
+                case 3:
+                    return {a * t[0], x * t[1], y * t[2], b};
+                case 2:
+                    return {a * t[0], x * t[1], y, b};
+                case 1:
+                    return {a * t[0], x, y, b};
+                default:
+                    throw std::invalid_argument("Invalid size for multiplication");
+            }
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a * t, x * t, y * t, b * t};
+        }
+        else {
+            throw std::invalid_argument("Invalid type for multiplication");
+        }
     }
 
     //--------------------Division----------------------
@@ -106,7 +123,40 @@ namespace VRSR {
     // Typically only division of scalars is possible. Each component of the multivector must be divided by the scalar.
     // This is not a true division, but a scaling of the multivector.
     // Traditionally it is thought you can not divide a vector by another vector, however this is not true.
-
+    template <typename T>
+    Versor Versor::div(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            if (t.a != 0.0f) {
+                return {a / t.a, x / t.a, y / t.a, b / t.a};    //If the input versor is a scalar
+            } else if (t.b == 0.0f) {
+                return {0.0f, x / t.x, y / t.y, 0.0f};          //If the input versor is a vector
+            } else {
+                return {0.0f, 0.0f, 0.0f, b / t.b};             //If the input versor is a bivector
+            }
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a / t[0], x / t[1], y / t[2], b / t[3]};
+                case 3:
+                    return {a / t[0], x / t[1], y / t[2], b};
+                case 2:
+                    return {a / t[0], x / t[1], y, b};
+                case 1:
+                    return {a / t[0], x, y, b};
+                default:
+                    throw std::invalid_argument("Invalid size for division");
+            }
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a / t, x / t, y / t, b / t};
+        }
+        else {
+            throw std::invalid_argument("Invalid type for division");
+        }
+    }
+    /*
     //--------------------Exterior Product--------------------
     // Wedge Product, used to create bivectors and trivectors out of vectors. Also known as the exterior product.
     // This quantity represents the oriented area or volume constructed by the components.

@@ -41,24 +41,24 @@ public:
     //--------------------Subtraction--------------------
     template <typename T>
     Versor operator-(const T &t) const { return sub(t); }
-    //--------------------Multiplication-----------------
-    template <typename T>
-    Versor operator*(const T &t) const { return mul(t); }
-    //--------------------Division----------------------
-    template <typename T>
-    Versor operator/(const T &t) const { return div(t); }
-    //--------------------Exterior Product--------------------
-    template <typename T>
-    Versor operator^(const T &t) const { return ext(t); }
-    //--------------------Interior Product--------------------
-    template <typename T>
-    Versor operator|(const T &t) const { return inr(t); }
     //--------------------Left Contraction--------------------
     template <typename T>
     Versor operator<<(const T &t) const { return lco(t); }
     //--------------------Right Contraction--------------------
     template <typename T>
     Versor operator>>(const T &t) const { return rco(t); }
+    //--------------------Wedge Product--------------------
+    template <typename T>
+    Versor operator^(const T &t) const { return ext(t); }
+    //--------------------Dot Product--------------------
+    template <typename T>
+    Versor operator|(const T &t) const { return inr(t); }
+    //--------------------Multiplication-----------------
+    template <typename T>
+    Versor operator*(const T &t) const { return mul(t); }
+    //--------------------Division----------------------
+    template <typename T>
+    Versor operator/(const T &t) const { return div(t); }
     //--------------------Negate--------------------
     Versor operator!() const { return negate(); }
     //--------------------Reverse--------------------
@@ -89,17 +89,17 @@ private:
     template <typename T>
     Versor sub(const T &t) const;
     template <typename T>
-    Versor mul(const T &t) const;
+    Versor lco(const T &t) const;
     template <typename T>
-    Versor div(const T &t) const;
+    Versor rco(const T &t) const;
     template <typename T>
     Versor inr(const T &t) const;
     template <typename T>
     Versor ext(const T &t) const;
     template <typename T>
-    Versor lco(const T &t) const;
+    Versor mul(const T &t) const;
     template <typename T>
-    Versor rco(const T &t) const;
+    Versor div(const T &t) const;
 };
 
 } // VRSR

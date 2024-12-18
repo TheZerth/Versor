@@ -19,6 +19,7 @@ int main() {
         std::cout << (versor+versor) << std::endl;
         std::cout << (versor+3.14159) << std::endl;
         std::cout << (versor+3.14159f) << std::endl;
+        std::cout << (versor+3) << std::endl;
     }
 
     return 0;

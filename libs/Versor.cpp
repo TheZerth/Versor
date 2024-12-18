@@ -5,7 +5,7 @@
 #include "Versor.h"
 
 namespace VRSR {
-
+0
     enum VectorComponents { X = 0, Y = 1, Z = 2, W = 3 };
 
     //These are the basis vectors used for the space. All multivectors are combinations of e1 and e2.
@@ -88,6 +88,159 @@ namespace VRSR {
     template Versor Versor::sub<double>(const double &t) const;
     template Versor Versor::sub<float>(const float &t) const;
     template Versor Versor::sub<int>(const int &t) const;
+
+    //--------------------Left Contraction--------------------
+    // Contraction can be thought of the act of removing one object from another and leaving the result.
+    // It has many elagent uses in physics and mathematics.
+    // Given the two orthogonal basis vectores e1 and e2, contraction can be described by the following:
+    // e1 << e1 = 1, e1 << e2 = 0
+    // e1 << (e1 ^ e2) = e2, e1 << (e2 ^ e1) = -e2
+    // (e1 ^ e2) << (e1 ^ e2) = e1 << (e2 << (e1 ^ e2)) = -1
+    // a << rhs = arhs
+    // lhs << a = 0 if lhs grade > 0
+    template <typename T>
+    Versor Versor::lco(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            return {a * t.a + x * t.x + y * t.y - b * t.b, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a * t, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a * t[0] + x * t[1] + y * t[2] - b * t[3], 0.0f, 0.0f, 0.0f};
+                case 3:
+                    return {a * t[0] + x * t[1] + y * t[2], 0.0f, 0.0f, 0.0f};
+                case 2:
+                    return {a * t[0] + x * t[1], 0.0f, 0.0f, 0.0f};
+                case 1:
+                    return {a * t[0], 0.0f, 0.0f, 0.0f};
+                default:
+                    throw std::invalid_argument("Invalid size for left contraction");
+            }
+        }
+        else {
+            throw std::invalid_argument("Invalid type for left contraction");
+        }
+    }
+
+    //--------------------Right Contraction--------------------
+    template <typename T>
+    Versor Versor::rco(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            return {a * t.a + x * t.x + y * t.y - b * t.b, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a * t, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a * t[0] + x * t[1] + y * t[2] - b * t[3], 0.0f, 0.0f, 0.0f};
+                case 3:
+                    return {a * t[0] + x * t[1] + y * t[2], 0.0f, 0.0f, 0.0f};
+                case 2:
+                    return {a * t[0] + x * t[1], 0.0f, 0.0f, 0.0f};
+                case 1:
+                    return {a * t[0], 0.0f, 0.0f, 0.0f};
+                default:
+                    throw std::invalid_argument("Invalid size for right contraction");
+            }
+        }
+        else {
+            throw std::invalid_argument("Invalid type for right contraction");
+        }
+    }
+
+    //--------------------Exterior Product--------------------
+    // Wedge Product, used to create bivectors and trivectors out of vectors. Also known as the exterior product.
+    // This quantity represents the oriented area or volume constructed by the components.
+    // A is a versor containing a scalar and vector components; a+xe1+ye2
+    // A ^ B = (a_x * e1)(a_y * e2) ^ (b_x * e1)(b_y * e2), expanding with FOIL
+    // (a_x * e1) ^ (b_x * e1) + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + (a_y * e2) ^ (b_y * e2) =
+    // since e1_a = e1_b and a ^ a = 0, we can simplify this to:
+    // 0 + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + 0 =
+    // Using a ^ b = -b ^ a, we can simplify this to:
+    // (a_x * e1) ^ (b_y * e2) - (a_y * e1) ^ (b_x * e2) =
+    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
+    // (a_x * b_y - a_y * b_x) * e1 ^ e2
+    // e1 ^ e2 is the unit bivector that represents the oriented volume of our basis vectors.
+    // The rest is a scalar quantity.
+    // If the wedge product is zero, then the two vectors are parallel.
+    template <typename T>
+    Versor Versor::ext(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            float tempa = (x * t.y) - (y * t.x);
+            float tempx = (b * t.y) - (a * t.x);
+            float tempy = (a * t.y) - (b * t.x);
+            float tempb = (x * t.y) - (y * t.x);
+            return { tempa, tempx, tempy, tempb };
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {0.0f, a * t, x * t, y * t};
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {0.0f, x * t[3], y * t[3], b * t[3]};
+                case 3:
+                    return {0.0f, x * t[2], y * t[2], b};
+                case 2:
+                    return {0.0f, x * t[1], y, b};
+                case 1:
+                    return {0.0f, x * t[0], y, b};
+                default:
+                    throw std::invalid_argument("Invalid size for exterior product");
+            }
+        }
+        else {
+            throw std::invalid_argument("Invalid type for exterior product");
+        }
+    }
+
+    //--------------------Interior Product--------------------
+    // Dot Product, used to create scalars out of vectors. Also known as the inner product or scalar product.
+    // Represents the projection of one vector onto another multiplied by the product of their magnitudes.
+    // A . B = (a_x * e1 + a_y * e2) . (b_x * e1 + b_y * e2), expanding with FOIL
+    // (a_x * e1) . (b_x * e1) + (a_x * e1) . (b_y * e2) + (a_y * e2) . (b_x * e1) + (a_y * e2) . (b_y * e2) =
+    // Since e1 and e2 are orthogonal, e1 . e2 = 0 we can simplify this to:
+    // (a_x * e1) . (b_x * e1) + 0 + 0 + (a_y * e2) . (b_y * e2) =
+    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
+    // (a_x * b_x)(e1 . e1) + (a_y * b_y)(e2 . e2) =
+    // Since e1 . e1 = 1 and e2 . e2 = 1, we can simplify this to:
+    // (a_x * b_x) + (a_y * b_y), just a scalar quantity.
+    // The inner product of itself is the square of the magnitude of the vector. A . A = |A|^2
+    template <typename T>
+    Versor Versor::inr(const T &t) const
+    {
+        if constexpr (std::is_same_v<T, Versor>) {
+            return {a * t.a + x * t.x + y * t.y, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (std::is_arithmetic_v<T>) {
+            return {a * t, 0.0f, 0.0f, 0.0f};
+        }
+        else if constexpr (is_vector_v<T> && std::is_arithmetic_v<typename T::value_type>) {
+            switch (t.size()) {
+                case 4:
+                    return {a * t[0] + x * t[1] + y * t[2], 0.0f, 0.0f, 0.0f};
+                case 3:
+                    return {a * t[0] + x * t[1] + y * t[2], 0.0f, 0.0f, 0.0f};
+                case 2:
+                    return {a * t[0] + x * t[1], 0.0f, 0.0f, 0.0f};
+                case 1:
+                    return {a * t[0], 0.0f, 0.0f, 0.0f};
+                default:
+                    throw std::invalid_argument("Invalid size for interior product");
+            }
+        }
+        else {
+            throw std::invalid_argument("Invalid type for interior product");
+        }
+    }
 
     //--------------------Multiplication--------------------
     // Versor multiplication is not standard multiplication, it is what is known as a geometric product.
@@ -172,46 +325,7 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for division");
         }
     }
-    /*
-    //--------------------Exterior Product--------------------
-    // Wedge Product, used to create bivectors and trivectors out of vectors. Also known as the exterior product.
-    // This quantity represents the oriented area or volume constructed by the components.
-    // A is a versor containing a scalar and vector components; a+xe1+ye2
-    // A ^ B = (a_x * e1)(a_y * e2) ^ (b_x * e1)(b_y * e2), expanding with FOIL
-    // (a_x * e1) ^ (b_x * e1) + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + (a_y * e2) ^ (b_y * e2) =
-    // since e1_a = e1_b and a ^ a = 0, we can simplify this to:
-    // 0 + (a_x * e1) ^ (b_y * e2) + (a_y * e2) ^ (b_x * e1) + 0 =
-    // Using a ^ b = -b ^ a, we can simplify this to:
-    // (a_x * e1) ^ (b_y * e2) - (a_y * e1) ^ (b_x * e2) =
-    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
-    // (a_x * b_y - a_y * b_x) * e1 ^ e2
-    // e1 ^ e2 is the unit bivector that represents the oriented volume of our basis vectors.
-    // The rest is a scalar quantity.
-    // If the wedge product is zero, then the two vectors are parallel.
 
-    //--------------------Interior Product--------------------
-    // Dot Product, used to create scalars out of vectors. Also known as the inner product or scalar product.
-    // Represents the projection of one vector onto another multiplied by the product of their magnitudes.
-    // A . B = (a_x * e1 + a_y * e2) . (b_x * e1 + b_y * e2), expanding with FOIL
-    // (a_x * e1) . (b_x * e1) + (a_x * e1) . (b_y * e2) + (a_y * e2) . (b_x * e1) + (a_y * e2) . (b_y * e2) =
-    // Since e1 and e2 are orthogonal, e1 . e2 = 0 we can simplify this to:
-    // (a_x * e1) . (b_x * e1) + 0 + 0 + (a_y * e2) . (b_y * e2) =
-    // Through factoring a_x, a_y, b_x and b_y, we can simplify this to:
-    // (a_x * b_x)(e1 . e1) + (a_y * b_y)(e2 . e2) =
-    // Since e1 . e1 = 1 and e2 . e2 = 1, we can simplify this to:
-    // (a_x * b_x) + (a_y * b_y), just a scalar quantity.
-    // The inner product of itself is the square of the magnitude of the vector. A . A = |A|^2
-
-    //--------------------Left Contraction--------------------
-    // Contraction can be thought of the act of removing one object from another and leaving the result.
-    // It has many elagent uses in physics and mathematics.
-    // Given the two orthogonal basis vectores e1 and e2, contraction can be described by the following:
-    // e1 << e1 = 1, e1 << e2 = 0
-    // e1 << (e1 ^ e2) = e2, e1 << (e2 ^ e1) = -e2
-    // (e1 ^ e2) << (e1 ^ e2) = e1 << (e2 << (e1 ^ e2)) = -1
-    // a << rhs = arhs
-    // lhs << a = 0 if lhs grade > 0
-    */
     //--------------------IO--------------------
     std::string Versor::toString() const {
         return std::to_string(a) + ", " + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(b);

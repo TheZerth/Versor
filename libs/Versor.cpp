@@ -15,7 +15,7 @@ namespace VRSR {
     //--------------------Addition--------------------
     // ADDITION of multivectors is simply the individual sums of the compononents.
     template <typename T>
-     Versor Versor::add(const T &t) const
+    Versor Versor::add(const T &t) const
     {
         if constexpr (std::is_same_v<T, Versor>) {
             return {a + t.a, x + t.x, y + t.y, b + t.b};
@@ -328,6 +328,20 @@ namespace VRSR {
 
     //--------------------IO--------------------
     std::string Versor::toString() const {
-        return std::to_string(a) + ", " + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(b);
+        std::string result;
+        if (a != 0) result += std::to_string(a);
+        if (x != 0) {
+            if (!result.empty()) result += " + ";
+            result += std::to_string(x) + "e1";
+        }
+        if (y != 0) {
+            if (!result.empty()) result += " + ";
+            result += std::to_string(y) + "e2";
+        }
+        if (b != 0) {
+            if (!result.empty()) result += " + ";
+            result += std::to_string(b) + "e1^e2";
+        }
+        return result.empty() ? "0" : result;
     }
 } // VRSR

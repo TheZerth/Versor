@@ -5,7 +5,7 @@
 #include "Versor.h"
 
 namespace VRSR {
-0
+
     enum VectorComponents { X = 0, Y = 1, Z = 2, W = 3 };
 
     //These are the basis vectors used for the space. All multivectors are combinations of e1 and e2.
@@ -125,6 +125,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for left contraction");
         }
     }
+    // Explicit instantiation of the lco method template for Versor
+    /*
+    template Versor Versor::lco<Versor>(const Versor &t) const;
+    template Versor Versor::lco<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::lco<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::lco<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::lco<double>(const double &t) const;
+    template Versor Versor::lco<float>(const float &t) const;
+    template Versor Versor::lco<int>(const int &t) const;
+    */
 
     //--------------------Right Contraction--------------------
     template <typename T>
@@ -154,6 +164,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for right contraction");
         }
     }
+    // Explicit instantiation of the rco method template for Versor
+    /*
+    template Versor Versor::rco<Versor>(const Versor &t) const;
+    template Versor Versor::rco<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::rco<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::rco<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::rco<double>(const double &t) const;
+    template Versor Versor::rco<float>(const float &t) const;
+    template Versor Versor::rco<int>(const int &t) const;
+    */
 
     //--------------------Exterior Product--------------------
     // Wedge Product, used to create bivectors and trivectors out of vectors. Also known as the exterior product.
@@ -201,6 +221,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for exterior product");
         }
     }
+    // Explicit instantiation of the ext method template for Versor
+    /*
+    template Versor Versor::ext<Versor>(const Versor &t) const;
+    template Versor Versor::ext<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::ext<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::ext<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::ext<double>(const double &t) const;
+    template Versor Versor::ext<float>(const float &t) const;
+    template Versor Versor::ext<int>(const int &t) const;
+    */
 
     //--------------------Interior Product--------------------
     // Dot Product, used to create scalars out of vectors. Also known as the inner product or scalar product.
@@ -241,6 +271,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for interior product");
         }
     }
+    // Explicit instantiation of the inr method template for Versor
+    /*
+    template Versor Versor::inr<Versor>(const Versor &t) const;
+    template Versor Versor::inr<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::inr<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::inr<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::inr<double>(const double &t) const;
+    template Versor Versor::inr<float>(const float &t) const;
+    template Versor Versor::inr<int>(const int &t) const;
+    */
 
     //--------------------Multiplication--------------------
     // Versor multiplication is not standard multiplication, it is what is known as a geometric product.
@@ -286,6 +326,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for multiplication");
         }
     }
+    // Explicit instantiation of the mul method template for Versor
+    /*
+    template Versor Versor::mul<Versor>(const Versor &t) const;
+    template Versor Versor::mul<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::mul<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::mul<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::mul<double>(const double &t) const;
+    template Versor Versor::mul<float>(const float &t) const;
+    template Versor Versor::mul<int>(const int &t) const;
+    */
 
     //--------------------Division----------------------
     // Division with multivectors while simple at first is complicated.
@@ -325,6 +375,16 @@ namespace VRSR {
             throw std::invalid_argument("Invalid type for division");
         }
     }
+    // Explicit instantiation of the div method template for Versor
+    /*
+    template Versor Versor::div<Versor>(const Versor &t) const;
+    template Versor Versor::div<std::vector<double>>(const std::vector<double> &t) const;
+    template Versor Versor::div<std::vector<float>>(const std::vector<float> &t) const;
+    template Versor Versor::div<std::vector<int>>(const std::vector<int> &t) const;
+    template Versor Versor::div<double>(const double &t) const;
+    template Versor Versor::div<float>(const float &t) const;
+    template Versor Versor::div<int>(const int &t) const;
+    */
 
     //--------------------IO--------------------
     std::string Versor::toString() const {
